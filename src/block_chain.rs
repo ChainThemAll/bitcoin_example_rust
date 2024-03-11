@@ -1,8 +1,5 @@
-use sha256::digest;
-
 use crate::{
     block::{Block, BlockHeader},
-    hash::HashValue,
     transaction::Transaction,
 };
 

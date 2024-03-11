@@ -37,8 +37,3 @@ impl Hashable for Transaction {
         HashValue::from(hash)
     }
 }
-#[test]
-fn test_Default() {
-    let txs = Transaction::default();
-    println!("{:?}", txs);
-}

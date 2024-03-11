@@ -1,7 +1,6 @@
 use block_chain_example::{
-    block::BlockHeader,
     block_chain::BlockChain,
-    transaction::{self, TXInput, TXOutput, Transaction},
+    transaction::{TXInput, TXOutput, Transaction},
 };
 
 fn main() {
