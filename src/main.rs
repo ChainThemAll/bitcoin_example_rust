@@ -15,5 +15,5 @@ fn main() {
         vec![TXInput("3".to_owned())],
         vec![TXOutput("2".to_owned())],
     )]);
-    dbg!(block_chain);
+    block_chain.show();
 }

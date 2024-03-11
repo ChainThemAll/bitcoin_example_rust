@@ -12,13 +12,13 @@ const BITS: u32 = 2;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Block {
-    header: BlockHeader,
+    pub header: BlockHeader,
     transactions: Vec<Transaction>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BlockHeader {
-    height: u32,
+    height: u64,
     parent_block_hash: HashValue,
     time_stamp: u64,
     merkle_root: HashValue,
@@ -35,9 +35,6 @@ impl Block {
     pub fn gen_genesis_block(txs: &[Transaction]) -> Self {
         let header = BlockHeader::new(0, HashValue::default(), HashValue::default());
         Self::new(header, txs)
-    }
-    pub fn hash(&self) -> HashValue {
-        self.header.hash()
     }
 
     pub fn calculate_merkle_root(transactions: &[Transaction]) -> HashValue {
@@ -61,6 +58,12 @@ impl Block {
 
         layer[0]
     }
+    pub fn height(&self) -> u64 {
+        self.header.height
+    }
+    pub fn hash(&self) -> HashValue {
+        self.header.hash()
+    }
 }
 impl Hashable for BlockHeader {
     fn hash(&self) -> HashValue {
@@ -71,7 +74,7 @@ impl Hashable for BlockHeader {
 }
 
 impl BlockHeader {
-    pub fn new(height: u32, parent_block_hash: HashValue, merkle_root: HashValue) -> Self {
+    pub fn new(height: u64, parent_block_hash: HashValue, merkle_root: HashValue) -> Self {
         Self {
             height,
             parent_block_hash,
