@@ -7,12 +7,24 @@ use serde::{Deserialize, Serialize};
 use sha256::digest;
 
 use std::time::{SystemTime, UNIX_EPOCH};
+
+const BITS: u32 = 2;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Block {
     header: BlockHeader,
     transactions: Vec<Transaction>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct BlockHeader {
+    height: u32,
+    parent_block_hash: HashValue,
+    time_stamp: u64,
+    merkle_root: HashValue,
+    bits: u32,
+    nonce: u64,
+}
 impl Block {
     pub fn new(header: BlockHeader, txs: &[Transaction]) -> Self {
         Self {
@@ -50,14 +62,6 @@ impl Block {
         layer[0]
     }
 }
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BlockHeader {
-    height: u32,
-    parent_block_hash: HashValue,
-    tem_stamp: u64,
-    merkle_root: HashValue,
-}
 impl Hashable for BlockHeader {
     fn hash(&self) -> HashValue {
         let serialized_block_header = serde_json::to_vec(&self).unwrap();
@@ -71,18 +75,51 @@ impl BlockHeader {
         Self {
             height,
             parent_block_hash,
-            tem_stamp: SystemTime::now()
+            time_stamp: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
                 .as_secs(),
             merkle_root,
+            bits: BITS,
+            nonce: 0,
+        }
+    }
+    fn calculate_target(&self) -> HashValue {
+        let bits = self.bits;
+        let mut output = "f".repeat(64);
+        let input = bits as usize;
+
+        if input < 64 {
+            for i in 0..input {
+                output.replace_range(i..i + 1, "0");
+            }
+            output.replace_range(input..input + 1, "f");
+        }
+
+        HashValue::from(output)
+    }
+    pub fn proof_of_work(&mut self) {
+        let target = self.calculate_target();
+
+        while self.nonce < u64::MAX {
+            let hash = self.hash();
+            if hash < target {
+                dbg!(&hash.to_string());
+                dbg!(&target.to_string());
+                break;
+            } else {
+                self.nonce += 1;
+            }
         }
     }
 }
 
 #[test]
 fn test() {
-    let header = BlockHeader::new(1, HashValue::default(), HashValue::default());
-    let hash = header.hash();
-    println!("{}", hash);
+    let mut header = BlockHeader::new(1, HashValue::default(), HashValue::default());
+    let target = header.calculate_target();
+    println!("Target: {:?}", target.to_string());
+    header.proof_of_work();
+    println!("{:?}", header.nonce);
+    println!("{:?}", header.hash());
 }
