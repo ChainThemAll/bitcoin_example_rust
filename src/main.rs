@@ -1,5 +1,5 @@
 use block_chain_example::{
-    block::Block,
+    block::BlockHeader,
     block_chain::BlockChain,
     transaction::{self, TXInput, TXOutput, Transaction},
 };

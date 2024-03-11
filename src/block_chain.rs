@@ -1,6 +1,12 @@
-use crate::{block::Block, transaction::Transaction};
+use sha256::digest;
 
-#[derive(Debug)]
+use crate::{
+    block::{Block, BlockHeader},
+    hash::HashValue,
+    transaction::Transaction,
+};
+
+#[derive(Debug, Default)]
 pub struct BlockChain {
     blocks: Vec<Block>,
 }
@@ -12,11 +18,13 @@ impl BlockChain {
         }
     }
     pub fn add_block(&mut self, transactions: &[Transaction]) {
-        let r = self.blocks.last_mut().unwrap().get_hash();
-        let block = Block::new_block(
-            self.blocks.len() as u32,
-            self.blocks.last().unwrap().get_hash(),
-            transactions,
-        );
+        let parent_block_hash = self.blocks.last_mut().unwrap().hash();
+        let txs_hash_root = Block::calculate_merkle_root(transactions);
+        let block_header =
+            BlockHeader::new(self.blocks.len() as u32, parent_block_hash, txs_hash_root);
+        self.blocks.push(Block::new(block_header, transactions));
     }
 }
+
+#[test]
+fn test() {}
