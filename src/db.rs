@@ -1,13 +1,46 @@
 use once_cell::sync::Lazy;
+
 use sled::Db;
 use std::sync::Mutex;
+
+use crate::{block::Block, hash::HashValue};
 
 pub static DB: Lazy<Mutex<Db>> = Lazy::new(|| {
     let db = sled::open("my_db").expect("failed to open database");
     Mutex::new(db)
 });
 
+pub fn clear() {
+    let db = DB.lock().expect("db lock err");
+    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let _ = bitcoin.clear();
+}
 
+pub fn add_blockchain(block: Block) {
+    let db = DB.lock().expect("db lock err");
+    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let _ = bitcoin.insert(
+        block.hash().to_string(),
+        serde_json::to_vec(&block).unwrap(),
+    );
+}
+pub fn get_block(hash: HashValue) -> Option<Block> {
+    let db = DB.lock().expect("db lock err");
+    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let block = bitcoin.get(hash.to_string()).expect("get block err");
+    match block {
+        None => None,
+        Some(val) => {
+            let block: Block = serde_json::from_slice(&val).expect("deserialize block");
+            Some(block)
+        }
+    }
+}
+pub fn get_height() -> u64 {
+    let db = DB.lock().expect("db lock err");
+    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    bitcoin.len() as u64
+}
 
 #[test]
 fn test() {

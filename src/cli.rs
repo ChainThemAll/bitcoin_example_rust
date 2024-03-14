@@ -1,5 +1,3 @@
-use std::clone;
-
 use clap::{Parser, Subcommand};
 
 /// Manages a custom Rust implementation of a Bitcoin blockchain

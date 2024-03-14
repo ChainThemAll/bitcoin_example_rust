@@ -8,7 +8,7 @@ use block_chain_example::{
 };
 use clap::Parser;
 use tokio::time::sleep;
-use tracing::{info, trace};
+use tracing::info;
 static BLOCK_HEIGHT: u32 = 100;
 #[tokio::main]
 async fn main() {
