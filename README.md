@@ -9,7 +9,7 @@
 ## 技术栈
 
 - **语言**: Rust
-- **库**:  serde、hex、anyhow、hex、sled、once_cell、tokio
+- **库**:  serde、hex、anyhow、hex、sled、once_cell、tokio、tracing
 
 ## 功能
 
@@ -17,6 +17,7 @@
 - 工作量证明
 - 验证区块链完整性
 - 进行交易
+- p2p网络
 
 ## 如何运行
 
