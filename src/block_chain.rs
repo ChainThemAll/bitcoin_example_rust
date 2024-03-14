@@ -1,3 +1,5 @@
+use tracing::trace;
+
 use crate::{
     block::{Block, BlockHeader},
     transaction::Transaction,
@@ -15,12 +17,21 @@ impl BlockChain {
         }
     }
     pub fn add_block(&mut self, transactions: &[Transaction]) {
+        trace!("|--------------------------------block----------------------------------|");
         self.blocks.last_mut().unwrap().header.proof_of_work();
+        trace!("| height: {}", self.blocks.len());
         let parent_block_hash = self.blocks.last_mut().unwrap().hash();
         let txs_hash_root = Block::calculate_merkle_root(transactions);
-        let block_header =
-            BlockHeader::new(self.blocks.len() as u64, parent_block_hash, txs_hash_root);
+        trace!("| hash: {}", txs_hash_root);
+        let block_header = BlockHeader::new(
+            self.blocks.len() as u64,
+            parent_block_hash,
+            txs_hash_root.clone(),
+        );
         self.blocks.push(Block::new(block_header, transactions));
+        trace!("|-----------------------------------------------------------------------|");
+        trace!("                                  ||                                     ");
+        trace!("                                  \\/                                    ");
     }
 
     pub fn show(&self) {

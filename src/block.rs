@@ -107,8 +107,6 @@ impl BlockHeader {
         while self.nonce < u64::MAX {
             let hash = self.hash();
             if hash < target {
-                dbg!(&hash.to_string());
-                dbg!(&target.to_string());
                 break;
             } else {
                 self.nonce += 1;
