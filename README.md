@@ -9,7 +9,7 @@
 ## 技术栈
 
 - **语言**: Rust
-- **库**:  serde、hex、anyhow、hex、sled、once_cell、tokio、tracing
+- **库**:  serde、hex、anyhow、hex、sled、once_cell、tokio、tracing、ed25519、rand、
 
 ## 功能
 

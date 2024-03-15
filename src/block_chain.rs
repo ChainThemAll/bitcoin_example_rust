@@ -21,21 +21,20 @@ impl BlockChain {
         Self { last_hash: hash }
     }
     pub fn add_block(&mut self, transactions: &[Transaction]) {
-        trace!("|--------------------------------block----------------------------------|");
-
-        trace!("| height: {}", db::get_height());
+        trace!("|------------------------------------------block------------------------------------------|");
+        trace!("| height: {:<80}|", db::get_height());
         let parent_block_hash = self.last_hash;
-        trace!("| parent_block_hash: {}", parent_block_hash);
+        trace!("| parent_block_hash: {}     |", parent_block_hash);
         let txs_hash_root = Block::calculate_merkle_root(transactions);
-        trace!("| txs_hash_root: {}", txs_hash_root);
+        trace!("| txs_hash_root: {:<80}         |", txs_hash_root);
         let block_header = BlockHeader::new(db::get_height(), parent_block_hash, txs_hash_root);
         let mut block = Block::new(block_header, transactions);
         block.header.proof_of_work();
-        trace!("| hash: {}", block.hash());
+        trace!("| hash: {:<80}                  |", block.hash());
         self.last_hash = block.hash();
         db::add_block(block);
-        trace!("|-----------------------------------------------------------------------|");
-        trace!("                                  ||                                     ");
-        trace!("                                  \\/                                    ");
+        trace!("|-----------------------------------------------------------------------------------------|");
+        trace!("                                            ||                                             ");
+        trace!("                                            \\/                                            ");
     }
 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use sha256::digest;
 
 use crate::{
-    adddress::Address,
+    account::Account,
     hash::{HashValue, Hashable},
     signature::Signature,
 };
@@ -31,11 +31,11 @@ impl TXInput {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct TXOutput {
     value: u64,
-    script_pubkey: Address,
+    script_pubkey: Account,
 }
 
 impl TXOutput {
-    pub fn new(value: u64, script_pubkey: Address) -> Self {
+    pub fn new(value: u64, script_pubkey: Account) -> Self {
         Self {
             value,
             script_pubkey,
