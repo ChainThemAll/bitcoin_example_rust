@@ -17,7 +17,7 @@ impl BlockChain {
         let mut block = Block::gen_genesis_block(&[Transaction::default()]);
         block.header.proof_of_work();
         let hash = block.hash();
-        db::add_blockchain(block);
+        db::add_block(block);
         Self { last_hash: hash }
     }
     pub fn add_block(&mut self, transactions: &[Transaction]) {
@@ -33,7 +33,7 @@ impl BlockChain {
         block.header.proof_of_work();
         trace!("| hash: {}", block.hash());
         self.last_hash = block.hash();
-        db::add_blockchain(block);
+        db::add_block(block);
         trace!("|-----------------------------------------------------------------------|");
         trace!("                                  ||                                     ");
         trace!("                                  \\/                                    ");

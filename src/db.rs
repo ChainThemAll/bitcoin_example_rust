@@ -10,15 +10,21 @@ pub static DB: Lazy<Mutex<Db>> = Lazy::new(|| {
     Mutex::new(db)
 });
 
+pub static BITCOIN_PATH: &str = "bitcoin";
+pub static UTXO_PATH: &str = "utxo";
+
+// =============================================================================
+// blocks
+// =============================================================================
 pub fn clear() {
     let db = DB.lock().expect("db lock err");
-    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let bitcoin = db.open_tree(BITCOIN_PATH).expect("open tree err");
     let _ = bitcoin.clear();
 }
 
-pub fn add_blockchain(block: Block) {
+pub fn add_block(block: Block) {
     let db = DB.lock().expect("db lock err");
-    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let bitcoin = db.open_tree(BITCOIN_PATH).expect("open tree err");
     let _ = bitcoin.insert(
         block.hash().to_string(),
         serde_json::to_vec(&block).unwrap(),
@@ -26,7 +32,7 @@ pub fn add_blockchain(block: Block) {
 }
 pub fn get_block(hash: HashValue) -> Option<Block> {
     let db = DB.lock().expect("db lock err");
-    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let bitcoin = db.open_tree(BITCOIN_PATH).expect("open tree err");
     let block = bitcoin.get(hash.to_string()).expect("get block err");
     match block {
         None => None,
@@ -36,9 +42,45 @@ pub fn get_block(hash: HashValue) -> Option<Block> {
         }
     }
 }
+
 pub fn get_height() -> u64 {
     let db = DB.lock().expect("db lock err");
-    let bitcoin = db.open_tree("bitcoin").expect("open tree err");
+    let bitcoin = db.open_tree(BITCOIN_PATH).expect("open tree err");
+    bitcoin.len() as u64
+}
+
+// =============================================================================
+// transaction
+// =============================================================================
+pub fn clear_txs() {
+    let db = DB.lock().expect("db lock err");
+    let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
+    let _ = utxo.clear();
+}
+
+pub fn add_transaction(block: Block) {
+    let db = DB.lock().expect("db lock err");
+    let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
+    let _ = utxo.insert(
+        block.hash().to_string(),
+        serde_json::to_vec(&block).unwrap(),
+    );
+}
+pub fn get_transaction(hash: HashValue) -> Option<Block> {
+    let db = DB.lock().expect("db lock err");
+    let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
+    let block = utxo.get(hash.to_string()).expect("get block err");
+    match block {
+        None => None,
+        Some(val) => {
+            let block: Block = serde_json::from_slice(&val).expect("deserialize block");
+            Some(block)
+        }
+    }
+}
+pub fn get_txs_number() -> u64 {
+    let db = DB.lock().expect("db lock err");
+    let bitcoin = db.open_tree(UTXO_PATH).expect("open tree err");
     bitcoin.len() as u64
 }
 

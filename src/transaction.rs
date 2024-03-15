@@ -1,38 +1,64 @@
 use serde::{Deserialize, Serialize};
 use sha256::digest;
 
-use crate::hash::{HashValue, Hashable};
+use crate::{
+    adddress::Address,
+    hash::{HashValue, Hashable},
+    signature::Signature,
+};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Transaction {
-    id: Vec<u8>,         // 交易ID
-    vin: Vec<TXInput>,   // 输入
-    vout: Vec<TXOutput>, // 输出
+    vin: Vec<TXInput>,
+    vout: Vec<TXOutput>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct TXInput(pub String);
+pub struct TXInput {
+    previous_output_hash: HashValue,
+    script_sig: Signature,
+}
+
+impl TXInput {
+    pub fn new(previous_output_hash: HashValue, script_sig: Signature) -> Self {
+        Self {
+            previous_output_hash,
+            script_sig,
+        }
+    }
+}
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct TXOutput(pub String);
+pub struct TXOutput {
+    value: u64,
+    script_pubkey: Address,
+}
+
+impl TXOutput {
+    pub fn new(value: u64, script_pubkey: Address) -> Self {
+        Self {
+            value,
+            script_pubkey,
+        }
+    }
+}
 
 impl Transaction {
-    pub fn new(
-        id: Vec<u8>,
-        vin: Vec<TXInput>, // 输入
-        vout: Vec<TXOutput>,
-    ) -> Self {
+    pub fn new(vin: Vec<TXInput>, vout: Vec<TXOutput>) -> Self {
+        Self { vin, vout }
+    }
+
+    pub fn coinbase(vout: Vec<TXOutput>) -> Self {
         Self {
-            id,   // 交易ID
-            vin,  // 输入
-            vout, // 输出
+            vin: vec![TXInput::new(HashValue::default(), Signature::default())],
+            vout,
         }
     }
 }
 
 impl Hashable for Transaction {
     fn hash(&self) -> HashValue {
-        let ser_tx = serde_json::to_vec(&self).unwrap();
+        let ser_tx: Vec<u8> = serde_json::to_vec(&self).unwrap();
         let hash = digest(ser_tx);
         HashValue::from(hash)
     }
