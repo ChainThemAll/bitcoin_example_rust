@@ -1,4 +1,4 @@
-use crypto::digest::Digest;
+use crypto::{digest::Digest, ripemd160::Ripemd160};
 use rand::rngs::OsRng;
 use sha256::Sha256Digest;
 use std::iter::repeat;
@@ -7,7 +7,7 @@ const VERSION: u8 = 0x00;
 
 pub type Publickey = [u8; 32];
 pub type Privatekey = [u8; 32];
-pub type Address = [u8; 32];
+pub type Address = String;
 
 #[derive(Debug)]
 pub struct Keypair(ed25519_dalek::SigningKey);
@@ -32,16 +32,16 @@ impl Keypair {
         base58_encode(rt.as_slice())
     }
 
-    pub fn private_hex(&self) -> String {
+    pub fn prikey_hex(&self) -> String {
         hex::encode(self.private_key())
     }
-    pub fn public_hex(&self) -> String {
+    pub fn pubkey_hex(&self) -> String {
         hex::encode(self.public_key())
     }
 }
 
 pub fn ripemd160_digest(data: &[u8]) -> Vec<u8> {
-    let mut ripemd160 = crypto::ripemd160::Ripemd160::new();
+    let mut ripemd160 = Ripemd160::new();
     ripemd160.input(data);
     let mut buf: Vec<u8> = repeat(0).take(ripemd160.output_bytes()).collect();
     ripemd160.result(&mut buf);
@@ -69,17 +69,13 @@ fn checksum(payload: &[u8]) -> Vec<u8> {
 fn test() {
     let keypair: Keypair = Keypair::new();
 
-    let private_key = keypair.private_hex();
+    let private_key = keypair.prikey_hex();
 
-    // 从私钥生成公钥
-    let public_key = keypair.public_hex();
+    let public_key = keypair.pubkey_hex();
 
-    // 将公钥转换为字节序列
     let address = keypair.address();
 
-    // 使用 SHA-256 散列公钥字节
-
-    println!("私钥: {:?}", private_key);
-    println!("公钥: {:?}", public_key);
-    println!("地址: {:}", address);
+    println!("private_key: {:?}", private_key);
+    println!("public_key: {:?}", public_key);
+    println!("address: {:}", address);
 }
