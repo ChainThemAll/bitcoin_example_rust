@@ -25,12 +25,18 @@ impl Account {
     }
 
     pub fn prikey(&self) -> Privatekey {
-        self.prikey()
+        self.private_key
     }
     pub fn pubkey(&self) -> Publickey {
-        self.pubkey()
+        self.pubkey
     }
     pub fn address(&self) -> Address {
-        self.address()
+        self.address.clone()
     }
+}
+
+#[test]
+fn test() {
+    let a = Account::new();
+    println!("{}", a.address())
 }

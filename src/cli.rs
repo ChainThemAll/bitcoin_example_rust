@@ -1,4 +1,15 @@
+use std::time::Duration;
+
 use clap::{Parser, Subcommand};
+use tokio::time::sleep;
+use tracing::info;
+
+use crate::{
+    block_chain::BlockChain,
+    transaction::Transaction,
+    wallet::{self, Wallet},
+};
+static BLOCK_HEIGHT: u32 = 100;
 
 /// Manages a custom Rust implementation of a Bitcoin blockchain
 #[derive(Parser, Clone)]
@@ -28,7 +39,7 @@ pub struct Cli {
     #[arg(long)]
     pub conf: Option<String>,
 
-    #[arg(short, default_value = "info")]
+    #[arg(short, default_value = "trace")]
     pub log: Option<tracing::Level>,
 
     #[command(subcommand)]
@@ -67,37 +78,51 @@ pub enum Commands {
     Getbalance,
 }
 
-pub fn command(cli: Cli) {
+pub async fn command(cli: Cli) {
+    println!("im in");
     match &cli.command {
         Some(Commands::Getblockchaininfo) => {
             println!("Getting blockchain info...");
-            // 实现获取区块链信息的逻辑
+            // Implement the logic of obtaining blockchain information
         }
+
         Some(Commands::Getblock { block_hash }) => {
             println!("Getting info for block: {}", block_hash);
-            // 实现获取指定区块信息的逻辑
+            // Implement the logic to obtain specified block information
         }
+
         Some(Commands::Gettransaction { transaction_id }) => {
             println!("Getting transaction info: {}", transaction_id);
-            // 实现获取特定交易信息的逻辑
+            // Implement the logic to obtain specific transaction information
         }
+
         Some(Commands::Sendtoaddress { address, amount }) => {
             println!("Sending {} to address: {}", amount, address);
-            // 实现发送比特币到指定地址的逻辑
         }
+
         Some(Commands::Getnewaddress) => {
-            println!("Creating a new address...");
-            // 实现创建新地址的逻辑
+            info!("Creating a new address...");
+            //Implement the logic for creating new addresses
+            let address = Wallet::new().add_new_account();
+            info!("This is your enw account address : '{}'", address)
         }
+
         Some(Commands::Getbalance) => {
             println!("Getting wallet balance...");
-            // 实现获取钱包余额的逻辑
+            // Implement the logic of obtaining wallet balance
         }
+
         None => {
-            if cli.server {
-                println!("Running as server...");
-                // 实现作为服务器运行的逻辑
-            }
+            println!("Running as server...");
+            let block_handle = tokio::spawn(async {
+                let mut bitcoin = BlockChain::new();
+
+                for _ in 0..BLOCK_HEIGHT {
+                    sleep(Duration::from_secs(1)).await;
+                    bitcoin.add_block(&[Transaction::default()])
+                }
+            });
+            let _ = block_handle.await;
         }
     }
 }

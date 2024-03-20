@@ -3,7 +3,7 @@ use once_cell::sync::Lazy;
 use sled::Db;
 use std::sync::Mutex;
 
-use crate::{block::Block, hash::HashValue};
+use crate::{account::Account, block::Block, crypto::Address, hash::HashValue};
 
 pub static DB: Lazy<Mutex<Db>> = Lazy::new(|| {
     let db = sled::open("my_db").expect("failed to open database");
@@ -12,6 +12,7 @@ pub static DB: Lazy<Mutex<Db>> = Lazy::new(|| {
 
 pub static BITCOIN_PATH: &str = "bitcoin";
 pub static UTXO_PATH: &str = "utxo";
+pub static WALLET_PATH: &str = "wallet";
 
 // =============================================================================
 // blocks
@@ -82,6 +83,29 @@ pub fn get_txs_number() -> u64 {
     let db = DB.lock().expect("db lock err");
     let bitcoin = db.open_tree(UTXO_PATH).expect("open tree err");
     bitcoin.len() as u64
+}
+
+// =============================================================================
+// wallet
+// =============================================================================
+
+pub fn add_account(account: Account) {
+    let db = DB.lock().expect("db lock err");
+    let wallet = db.open_tree(WALLET_PATH).expect("open tree err");
+    let _ = wallet.insert(account.address(), serde_json::to_vec(&account).unwrap());
+}
+
+pub fn get_all_addresses() -> Vec<Address> {
+    let db = DB.lock().expect("db lock err");
+    let wallet = db.open_tree(WALLET_PATH).expect("open tree err");
+
+    let mut addresses = Vec::new();
+    wallet.iter().for_each(|address| {
+        if let Ok((addr, _)) = address {
+            addresses.push(String::from_utf8(addr.to_vec()).unwrap());
+        }
+    });
+    addresses
 }
 
 #[test]
