@@ -1,7 +1,6 @@
-use crypto::*;
+use crate::crypto::{Address, Keypair, Privatekey, Publickey};
 use serde::{Deserialize, Serialize};
 
-use crate::crypto::{Address, Keypair, Privatekey, Publickey};
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Account {
     private_key: Privatekey,
@@ -23,5 +22,15 @@ impl Account {
             pubkey,
             address,
         }
+    }
+
+    pub fn prikey(&self) -> Privatekey {
+        self.prikey()
+    }
+    pub fn pubkey(&self) -> Publickey {
+        self.pubkey()
+    }
+    pub fn address(&self) -> Address {
+        self.address()
     }
 }

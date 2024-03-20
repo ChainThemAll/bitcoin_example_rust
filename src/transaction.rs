@@ -1,16 +1,17 @@
+use ed25519_dalek::Signer;
 use serde::{Deserialize, Serialize};
 use sha256::digest;
 
 use crate::{
-    account::Account,
+    crypto::Address,
     hash::{HashValue, Hashable},
     signature::Signature,
 };
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Transaction {
-    vin: Vec<TXInput>,
-    vout: Vec<TXOutput>,
+    pub vin: Vec<TXInput>,
+    pub vout: Vec<TXOutput>,
 }
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -31,11 +32,11 @@ impl TXInput {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct TXOutput {
     value: u64,
-    script_pubkey: Account,
+    script_pubkey: Address,
 }
 
 impl TXOutput {
-    pub fn new(value: u64, script_pubkey: Account) -> Self {
+    pub fn new(value: u64, script_pubkey: Address) -> Self {
         Self {
             value,
             script_pubkey,

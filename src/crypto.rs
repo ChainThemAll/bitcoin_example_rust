@@ -1,4 +1,7 @@
+use crate::signature::Signature;
 use crypto::{digest::Digest, ripemd160::Ripemd160};
+
+use ed25519_dalek::Signer;
 use rand::rngs::OsRng;
 use sha256::Sha256Digest;
 use std::iter::repeat;
@@ -37,6 +40,16 @@ impl Keypair {
     }
     pub fn pubkey_hex(&self) -> String {
         hex::encode(self.public_key())
+    }
+    pub fn sign(&self, msg: &[u8]) -> Signature {
+        self.0.sign(msg).into()
+    }
+
+    pub fn verify(&self, message: &[u8], signature: Signature) -> Result<(), String> {
+        match self.0.verify(message, &signature.into()) {
+            Ok(_) => Ok(()),
+            Err(_) => Err("Signature verified successfully!".to_owned()),
+        }
     }
 }
 
@@ -78,4 +91,25 @@ fn test() {
     println!("private_key: {:?}", private_key);
     println!("public_key: {:?}", public_key);
     println!("address: {:}", address);
+}
+#[test]
+
+fn main() {
+    use ed25519_dalek::Signer;
+    use rand::rngs::OsRng;
+    // 生成密钥对
+    let mut csprng = OsRng {};
+    let keypair = Keypair::new();
+
+    // 待签名的消息
+    let message: &[u8] = b"Blockchain technology";
+
+    // 签名消息
+    let signature: ed25519_dalek::Signature = keypair.0.sign(message);
+
+    // 验证签名
+    match keypair.0.verify(message, &signature) {
+        Ok(_) => println!("Signature verified successfully!"),
+        Err(_) => println!("Failed to verify signature!"),
+    }
 }

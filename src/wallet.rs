@@ -1,4 +1,4 @@
-use crate::account::Account;
+use crate::{account::Account, crypto::Address};
 //todo!
 // manage accounts
 // crate new account
@@ -23,11 +23,18 @@ impl Wallet {
         let new_account = Account::new();
         Self::add_account(self, new_account);
     }
+    pub fn get_all_addresses(&self) -> Vec<Address> {
+        self.accounts
+            .iter()
+            .map(|account| account.address())
+            .collect::<Vec<String>>()
+    }
 }
 
 #[test]
 fn test() {
     let mut wallet = Wallet::new();
     wallet.add_new_account();
-    dbg!(wallet);
+    wallet.add_new_account();
+    wallet.get_all_addresses();
 }
