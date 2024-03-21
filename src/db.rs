@@ -3,7 +3,13 @@ use once_cell::sync::Lazy;
 use sled::Db;
 use std::sync::Mutex;
 
-use crate::{account::Account, block::Block, crypto::Address, hash::HashValue};
+use crate::{
+    account::Account,
+    block::Block,
+    crypto::Address,
+    hash::{HashValue, Hashable},
+    transaction::Transaction,
+};
 
 pub static DB: Lazy<Mutex<Db>> = Lazy::new(|| {
     let db = sled::open("my_db").expect("failed to open database");
@@ -51,7 +57,7 @@ pub fn get_height() -> u64 {
 }
 
 // =============================================================================
-// transaction
+// transaction  utxo
 // =============================================================================
 pub fn clear_txs() {
     let db = DB.lock().expect("db lock err");
@@ -59,13 +65,10 @@ pub fn clear_txs() {
     let _ = utxo.clear();
 }
 
-pub fn add_transaction(block: Block) {
+pub fn add_transaction(tx: Transaction) {
     let db = DB.lock().expect("db lock err");
     let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
-    let _ = utxo.insert(
-        block.hash().to_string(),
-        serde_json::to_vec(&block).unwrap(),
-    );
+    let _ = utxo.insert(tx.hash().to_string(), serde_json::to_vec(&tx).unwrap());
 }
 pub fn get_transaction(hash: HashValue) -> Option<Block> {
     let db = DB.lock().expect("db lock err");

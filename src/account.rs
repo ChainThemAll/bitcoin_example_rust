@@ -1,22 +1,26 @@
-use crate::crypto::{Address, Keypair, Privatekey, Publickey};
+use crate::{
+    crypto::{Address, Keypair, PrivateKey, PublicKey},
+    hash::HashValue,
+};
 use serde::{Deserialize, Serialize};
+use sha256::Sha256Digest;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Account {
-    private_key: Privatekey,
-    pubkey: Publickey,
+    private_key: PrivateKey,
+    pubkey: PublicKey,
     address: Address,
 }
 
 impl Account {
     pub fn new() -> Self {
-        let keypair: Keypair = Keypair::new();
+        let Keypair: Keypair = Keypair::new();
 
-        let private_key = keypair.private_key();
+        let private_key = Keypair.private_key();
 
-        let pubkey = keypair.public_key();
+        let pubkey = Keypair.public_key();
 
-        let address = keypair.address();
+        let address = Keypair.address();
         Self {
             private_key,
             pubkey,
@@ -24,14 +28,17 @@ impl Account {
         }
     }
 
-    pub fn prikey(&self) -> Privatekey {
+    pub fn prikey(&self) -> PrivateKey {
         self.private_key
     }
-    pub fn pubkey(&self) -> Publickey {
+    pub fn pubkey(&self) -> PublicKey {
         self.pubkey
     }
     pub fn address(&self) -> Address {
         self.address.clone()
+    }
+    pub fn hash_pubkey(&self) -> HashValue {
+        self.pubkey.digest().into()
     }
 }
 

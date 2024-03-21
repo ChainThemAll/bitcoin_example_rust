@@ -1,7 +1,7 @@
 use crate::{
     account::Account,
     crypto::Address,
-    db::{self, DB},
+    db::{self},
 };
 //todo!
 // manage accounts
@@ -30,7 +30,7 @@ impl Wallet {
 
 #[test]
 fn test() {
-    let mut wallet = Wallet::new();
+    let wallet = Wallet::new();
     let addr = wallet.add_new_account();
     dbg!(addr);
     let addr = wallet.add_new_account();

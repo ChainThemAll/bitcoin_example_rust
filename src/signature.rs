@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::{crypto::Keypair, hash::HashValue};
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Signature {
     r: [u8; 32],
@@ -11,6 +13,10 @@ impl Signature {
         let mut new: [u8; 64] = [0; 64];
         // self.r.join(self.s)
         todo!()
+    }
+
+    pub fn sign(key: &Keypair, hash: &HashValue) -> Self {
+        key.sign(hash.hash.as_slice())
     }
 }
 

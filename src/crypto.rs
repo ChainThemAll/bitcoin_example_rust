@@ -8,8 +8,8 @@ use std::iter::repeat;
 
 const VERSION: u8 = 0x00;
 
-pub type Publickey = [u8; 32];
-pub type Privatekey = [u8; 32];
+pub type PublicKey = [u8; 32];
+pub type PrivateKey = [u8; 32];
 pub type Address = String;
 
 #[derive(Debug)]
@@ -20,11 +20,11 @@ impl Keypair {
         Self(ed25519_dalek::SigningKey::generate(&mut OsRng))
     }
 
-    pub fn public_key(&self) -> Publickey {
+    pub fn public_key(&self) -> PublicKey {
         self.0.verifying_key().to_bytes()
     }
 
-    pub fn private_key(&self) -> Privatekey {
+    pub fn private_key(&self) -> PrivateKey {
         self.0.to_bytes()
     }
     pub fn address(&self) -> String {
@@ -45,11 +45,8 @@ impl Keypair {
         self.0.sign(msg).into()
     }
 
-    pub fn verify(&self, message: &[u8], signature: Signature) -> Result<(), String> {
-        match self.0.verify(message, &signature.into()) {
-            Ok(_) => Ok(()),
-            Err(_) => Err("Signature verified successfully!".to_owned()),
-        }
+    pub fn verify(&self, message: &[u8], signature: Signature) -> bool {
+        self.0.verify(message, &signature.into()).is_ok()
     }
 }
 
@@ -61,12 +58,10 @@ pub fn ripemd160_digest(data: &[u8]) -> Vec<u8> {
     buf
 }
 
-/// base58 编码
 pub fn base58_encode(data: &[u8]) -> String {
     bs58::encode(data).into_string()
 }
 
-/// base58 解码
 pub fn base58_decode(data: &str) -> Vec<u8> {
     bs58::decode(data).into_vec().unwrap()
 }
@@ -80,36 +75,16 @@ fn checksum(payload: &[u8]) -> Vec<u8> {
 
 #[test]
 fn test() {
-    let keypair: Keypair = Keypair::new();
+    let key: Keypair = Keypair::new();
+    let private_key = key.prikey_hex();
+    let public_key = key.pubkey_hex();
+    let address = key.address();
 
-    let private_key = keypair.prikey_hex();
-
-    let public_key = keypair.pubkey_hex();
-
-    let address = keypair.address();
-
+    let msg = "heihie";
+    let sig = key.sign(msg.as_bytes());
+    let r = key.verify(msg.as_bytes(), sig);
+    println!("{}", r);
     println!("private_key: {:?}", private_key);
     println!("public_key: {:?}", public_key);
     println!("address: {:}", address);
-}
-#[test]
-
-fn main() {
-    use ed25519_dalek::Signer;
-    use rand::rngs::OsRng;
-    // 生成密钥对
-    let mut csprng = OsRng {};
-    let keypair = Keypair::new();
-
-    // 待签名的消息
-    let message: &[u8] = b"Blockchain technology";
-
-    // 签名消息
-    let signature: ed25519_dalek::Signature = keypair.0.sign(message);
-
-    // 验证签名
-    match keypair.0.verify(message, &signature) {
-        Ok(_) => println!("Signature verified successfully!"),
-        Err(_) => println!("Failed to verify signature!"),
-    }
 }

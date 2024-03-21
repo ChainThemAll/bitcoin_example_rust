@@ -4,11 +4,7 @@ use clap::{Parser, Subcommand};
 use tokio::time::sleep;
 use tracing::info;
 
-use crate::{
-    block_chain::BlockChain,
-    transaction::Transaction,
-    wallet::{self, Wallet},
-};
+use crate::{block_chain::BlockChain, transaction::Transaction, wallet::Wallet};
 static BLOCK_HEIGHT: u32 = 100;
 
 /// Manages a custom Rust implementation of a Bitcoin blockchain
