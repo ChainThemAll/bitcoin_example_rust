@@ -19,7 +19,11 @@ impl From<[u8; 32]> for HashValue {
         HashValue { hash: value }
     }
 }
-
+impl From<Vec<u8>> for HashValue {
+    fn from(value: Vec<u8>) -> Self {
+        String::from_utf8(value).unwrap().into()
+    }
+}
 impl From<String> for HashValue {
     fn from(value: String) -> Self {
         let hash = value.trim_start_matches("0x");

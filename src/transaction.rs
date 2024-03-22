@@ -2,16 +2,16 @@ use serde::{Deserialize, Serialize};
 use sha256::{digest, Sha256Digest};
 
 use crate::{
-    crypto::{Address, Keypair, PublicKey},
+    crypto::{base58_decode, Address, Keypair, PublicKey, ADDRESS_CHECK_SUM_LEN},
     hash::{HashValue, Hashable},
     signature::Signature,
 };
 
+//铸币奖励
 const SUBSIDY: u64 = 10;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Transaction {
-    id: HashValue,
     vin: Vec<TXInput>,
     vout: Vec<TXOutput>,
 }
@@ -37,7 +37,6 @@ pub struct TXOutput {
 impl Transaction {
     pub fn new_coinbase_tx(to: Address) -> Self {
         let mut tx = Self {
-            id: HashValue::default(),
             vin: vec![TXInput::new(
                 HashValue::default(),
                 0,
@@ -46,12 +45,12 @@ impl Transaction {
             )],
             vout: vec![TXOutput::new(SUBSIDY, to)],
         };
-        tx.id = tx.hash();
+
         tx
     }
     pub fn sign(&mut self, key: &Keypair) {
         self.vin.iter_mut().enumerate().for_each(|(i, vin)| {
-            let data = self.id.to_string();
+            let data = Self::prepare_sign_data();
             let data_hash = data.digest();
             let signature = Signature::sign(key, &data_hash.into());
             vin.previous_output_hash = HashValue::default();
@@ -61,6 +60,10 @@ impl Transaction {
         });
     }
     pub fn verify() -> bool {
+        todo!()
+    }
+    fn prepare_sign_data() -> String {
+        //前一个交易的hash，第几个输出，这次的pubkey,交易输出，自身序列号，签名时间
         todo!()
     }
 }
@@ -95,11 +98,23 @@ impl TXOutput {
             value,
             pubkey_hash: HashValue::default(),
         };
-        output.lock(address);
+        output.lock(&address);
         output
     }
 
-    fn lock(&self, address: String) {
-        todo!()
+    fn lock(&mut self, address: &str) {
+        let payload = base58_decode(address);
+
+        let pub_key_hash = payload[1..payload.len() - ADDRESS_CHECK_SUM_LEN].to_vec();
+
+        dbg!(pub_key_hash.clone());
+        self.pubkey_hash = pub_key_hash.into();
     }
+}
+
+#[test]
+fn test() {
+    let addr = Address::new();
+    let co = Transaction::new_coinbase_tx(addr);
+    dbg!(co);
 }
