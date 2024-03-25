@@ -1,10 +1,9 @@
 use crate::signature::Signature;
-use crypto::{digest::Digest, ripemd160::Ripemd160};
 
 use ed25519_dalek::Signer;
 use rand::rngs::OsRng;
+use ripemd::{Digest, Ripemd160};
 use sha256::Sha256Digest;
-use std::iter::repeat;
 
 const VERSION: u8 = 0x00;
 pub const ADDRESS_CHECK_SUM_LEN: usize = 4;
@@ -29,15 +28,14 @@ impl Keypair {
         self.0.to_bytes()
     }
     pub fn address(&self) -> String {
-        let hash = self.public_key().digest();
-        let mut hash_160 = ripemd160_digest(hash.as_bytes()).to_vec();
+        let mut hash_160 = Self::pub_key_hash(self).to_vec();
         hash_160.insert(0, VERSION);
         let rt = [hash_160.clone(), checksum(hash_160.as_slice())].concat();
         base58_encode(rt.as_slice())
     }
     pub fn pub_key_hash(&self) -> Ripemd160Hash {
         let hash = self.public_key().digest();
-        ripemd160_digest(hash.as_bytes()).try_into().unwrap()
+        ripemd160_digest(hash.as_bytes())
     }
     pub fn prikey_hex(&self) -> String {
         hex::encode(self.private_key())
@@ -53,13 +51,19 @@ impl Keypair {
         self.0.verify(message, &signature.into()).is_ok()
     }
 }
-
+//用地址对比公钥哈希
+pub fn address_verify(addr: &Address, pubkeyhash: Ripemd160Hash) -> bool {
+    let payload = base58_decode(addr);
+    let pub_key_hash: Ripemd160Hash = payload[1..payload.len() - ADDRESS_CHECK_SUM_LEN]
+        .try_into()
+        .unwrap();
+    pubkeyhash.eq(&pub_key_hash)
+}
 pub fn ripemd160_digest(data: &[u8]) -> Ripemd160Hash {
     let mut ripemd160 = Ripemd160::new();
-    ripemd160.input(data);
-    let mut buf: Vec<u8> = repeat(0).take(ripemd160.output_bytes()).collect();
-    ripemd160.result(&mut buf);
-    buf.try_into().unwrap()
+    ripemd160.update(data);
+    let ret = ripemd160.finalize();
+    ret[..].try_into().unwrap()
 }
 
 pub fn base58_encode(data: &[u8]) -> String {
@@ -79,11 +83,12 @@ fn checksum(payload: &[u8]) -> Vec<u8> {
 
 #[test]
 fn test() {
-    let key: Keypair = Keypair::new();
-    let private_key = key.private_key();
-    let public_key = key.public_key();
-    let pub_key_hash = key.pub_key_hash();
-    let address = key.address();
-
-    let data = base58_decode(&address);
+    use crate::account::Account;
+    let account = Account::new();
+    let _private_key = account.private_key();
+    let _public_key = account.public_key();
+    let pub_key_hash = account.pub_key_hash();
+    let address = account.address();
+    let ret = address_verify(&address, pub_key_hash);
+    dbg!(ret);
 }

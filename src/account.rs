@@ -1,5 +1,5 @@
 use crate::{
-    crypto::{Address, Keypair, PrivateKey, PublicKey},
+    crypto::{ripemd160_digest, Address, Keypair, PrivateKey, PublicKey, Ripemd160Hash},
     hash::HashValue,
 };
 use serde::{Deserialize, Serialize};
@@ -28,17 +28,17 @@ impl Account {
         }
     }
 
-    pub fn prikey(&self) -> PrivateKey {
+    pub fn private_key(&self) -> PrivateKey {
         self.private_key
     }
-    pub fn pubkey(&self) -> PublicKey {
+    pub fn public_key(&self) -> PublicKey {
         self.pubkey
     }
     pub fn address(&self) -> Address {
         self.address.clone()
     }
-    pub fn hash_pubkey(&self) -> HashValue {
-        self.pubkey.digest().into()
+    pub fn pub_key_hash(&self) -> Ripemd160Hash {
+        ripemd160_digest(self.pubkey.digest().as_bytes())
     }
 }
 
