@@ -50,6 +50,10 @@ impl Keypair {
     pub fn verify(&self, message: &[u8], signature: Signature) -> bool {
         self.0.verify(message, &signature.into()).is_ok()
     }
+
+    pub fn from_bytes(private_key: &PrivateKey) -> Self {
+        Self(ed25519_dalek::SigningKey::from_bytes(private_key))
+    }
 }
 //用地址对比公钥哈希
 pub fn address_verify(addr: &Address, pubkeyhash: Ripemd160Hash) -> bool {

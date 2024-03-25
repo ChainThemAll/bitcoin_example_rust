@@ -62,9 +62,11 @@ pub enum Commands {
     /// Sends a specified amount of Bitcoin to an address
     Sendtoaddress {
         /// The Bitcoin address
-        address: String,
+        from: String,
+        /// The Bitcoin address
+        to: String,
         /// The amount of Bitcoin to send
-        amount: f64,
+        amount: u64,
     },
 
     /// Creates a new address for receiving Bitcoin
@@ -92,8 +94,9 @@ pub async fn command(cli: Cli) {
             // Implement the logic to obtain specific transaction information
         }
 
-        Some(Commands::Sendtoaddress { address, amount }) => {
-            println!("Sending {} to address: {}", amount, address);
+        Some(Commands::Sendtoaddress { from, to, amount }) => {
+            println!("Sending {} to address: {}", amount, to);
+            Wallet::send_tx(from.to_owned(), to.to_owned(), *amount);
         }
 
         Some(Commands::Getnewaddress) => {
@@ -121,4 +124,16 @@ pub async fn command(cli: Cli) {
             let _ = block_handle.await;
         }
     }
+}
+
+#[test]
+fn test() {
+    //test wallet
+
+    //gen new wallet
+    let wallet = Wallet::new();
+    //gen a count
+    let r = wallet.add_new_account();
+    //send a tx
+    Wallet::send_tx(r.clone(), r.clone(), 10);
 }

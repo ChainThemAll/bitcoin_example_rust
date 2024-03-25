@@ -3,6 +3,7 @@ use sha256::{digest, Sha256Digest};
 
 use crate::{
     crypto::{base58_decode, Address, Keypair, PublicKey, ADDRESS_CHECK_SUM_LEN},
+    db::get_utxo,
     hash::{HashValue, Hashable},
     signature::Signature,
 };
@@ -47,6 +48,15 @@ impl Transaction {
         };
 
         tx
+    }
+
+    pub fn new(from: Address, to: Address, value: u64) -> Self {
+        let hash = HashValue::default();
+        let _ = get_utxo(hash, 0);
+
+        let vin = todo!();
+        let vout = todo!();
+        Self { vin, vout }
     }
     pub fn sign(&mut self, key: &Keypair) {
         self.vin.iter_mut().enumerate().for_each(|(i, vin)| {

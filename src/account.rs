@@ -1,6 +1,7 @@
 use crate::{
     crypto::{ripemd160_digest, Address, Keypair, PrivateKey, PublicKey, Ripemd160Hash},
     hash::HashValue,
+    transaction::Transaction,
 };
 use serde::{Deserialize, Serialize};
 use sha256::Sha256Digest;
@@ -14,13 +15,13 @@ pub struct Account {
 
 impl Account {
     pub fn new() -> Self {
-        let Keypair: Keypair = Keypair::new();
+        let keypair: Keypair = Keypair::new();
 
-        let private_key = Keypair.private_key();
+        let private_key = keypair.private_key();
 
-        let pubkey = Keypair.public_key();
+        let pubkey = keypair.public_key();
 
-        let address = Keypair.address();
+        let address = keypair.address();
         Self {
             private_key,
             pubkey,
@@ -39,6 +40,14 @@ impl Account {
     }
     pub fn pub_key_hash(&self) -> Ripemd160Hash {
         ripemd160_digest(self.pubkey.digest().as_bytes())
+    }
+    pub fn gen_tx(&self, to: Address, value: u64) -> Transaction {
+        Transaction::new(self.address.clone(), to, value)
+    }
+    pub fn sign_tx(&self, mut tx: Transaction) -> Transaction {
+        let keypair: Keypair = Keypair::from_bytes(&self.private_key);
+        tx.sign(&keypair);
+        tx
     }
 }
 

@@ -1,7 +1,8 @@
 use crate::{
-    account::Account,
+    account::{self, Account},
     crypto::Address,
-    db::{self},
+    db,
+    transaction::Transaction,
 };
 //todo!
 // manage accounts
@@ -25,6 +26,14 @@ impl Wallet {
     }
     pub fn get_all_addresses(&self) -> Vec<Address> {
         db::get_all_addresses()
+    }
+    pub fn send_tx(addr: Address, to: Address, value: u64) {
+        let account = db::get_account(addr).unwrap();
+        let signed_tx = account.sign_tx(account.gen_tx(to, value));
+        println!(
+            "Broadcast transactions to the Bitcoin network:{:?}",
+            signed_tx
+        );
     }
 }
 
