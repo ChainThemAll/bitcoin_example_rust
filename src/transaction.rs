@@ -3,9 +3,9 @@ use sha256::{digest, Sha256Digest};
 
 use crate::{
     crypto::{base58_decode, Address, Keypair, PublicKey, ADDRESS_CHECK_SUM_LEN},
-    db::get_utxo,
+    db::{self, get_utxo},
     hash::{HashValue, Hashable},
-    signature::Signature,
+    signature::{self, Signature},
 };
 
 //铸币奖励
@@ -51,9 +51,12 @@ impl Transaction {
     }
 
     pub fn new(from: Address, to: Address, value: u64) -> Self {
-        let hash = HashValue::default();
-        let _ = get_utxo(hash, 0);
-
+        let hash = db::get_block_last();
+        let vin = get_utxo(from)
+            .unwrap()
+            .iter()
+            .map(|tx_out| TXInput::new(hash, 0, signature::Signature::default(), [0; 32]))
+            .collect::<Vec<TXInput>>();
         let vin = todo!();
         let vout = todo!();
         Self { vin, vout }

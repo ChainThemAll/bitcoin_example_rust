@@ -5,9 +5,9 @@ use std::sync::Mutex;
 
 use crate::{
     account::Account,
-    block::Block,
+    block::{Block, BlockHeader},
     crypto::Address,
-    hash::{HashValue, Hashable},
+    hash::HashValue,
     transaction::{TXOutput, Transaction},
 };
 
@@ -49,6 +49,12 @@ pub fn get_block(hash: HashValue) -> Option<Block> {
         }
     }
 }
+pub fn get_block_last() -> HashValue {
+    let db = DB.lock().expect("db lock err");
+    let bitcoin = db.open_tree(BITCOIN_PATH).expect("open tree err");
+    let (key, value) = bitcoin.last().unwrap().unwrap();
+    serde_json::from_slice::<Block>(&value).unwrap().hash()
+}
 
 pub fn get_height() -> u64 {
     let db = DB.lock().expect("db lock err");
@@ -64,22 +70,34 @@ pub fn clear_utxo() {
     let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
     let _ = utxo.clear();
 }
-
-pub fn save_utxo(hash: HashValue, index: i32, tx_out: TXOutput) {
+pub fn add_utxo(addr: Address, tx_out: TXOutput) {
     let db = DB.lock().expect("db lock err");
     let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
-
-    let key = format!("{}:{}", hash.to_hex(), index);
-    let _ = utxo.insert(key, serde_json::to_vec(&tx_out).unwrap());
+    match utxo.get(addr.clone()) {
+        Ok(Some(val)) => {
+            let mut outs = serde_json::from_slice::<Vec<TXOutput>>(&val).unwrap();
+            outs.push(tx_out);
+            let _ = utxo.insert(addr, serde_json::to_vec(&outs).unwrap());
+        }
+        Ok(None) => {
+            let _ = utxo.insert(addr, serde_json::to_vec(&vec![tx_out]).unwrap());
+        }
+        Err(_) => {
+            println!("db_err")
+        }
+    };
 }
 
-pub fn get_utxo(hash: HashValue, index: i32) {
+pub fn get_utxo(addr: Address) -> Result<Vec<TXOutput>, String> {
     let db = DB.lock().expect("db lock err");
     let utxo = db.open_tree(UTXO_PATH).expect("open tree err");
-
-    let key = format!("{}:{}", hash.to_hex(), index);
-    let _ = utxo.get(key);
+    match utxo.get(addr) {
+        Ok(Some(ivec)) => Ok(serde_json::from_slice::<Vec<TXOutput>>(&ivec).unwrap()),
+        Ok(None) => Ok(Vec::new()),
+        Err(_) => panic!(),
+    }
 }
+
 // =============================================================================
 // wallet
 // =============================================================================
@@ -135,4 +153,16 @@ fn test() {
         .to_owned()
         .len();
     println!("{}", v2);
+}
+
+#[test]
+fn test_db() {
+    let ser = serde_json::to_vec(&Block::new(
+        BlockHeader::new(1, HashValue::default(), HashValue::default()),
+        &vec![Transaction::default()],
+    ))
+    .unwrap();
+
+    let r = serde_json::from_slice::<Block>(&ser).unwrap();
+    assert_eq!(r.hash(), HashValue::default())
 }
