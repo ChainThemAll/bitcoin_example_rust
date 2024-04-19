@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 
+use core::num;
 use sled::Db;
 use std::sync::Mutex;
 
@@ -165,4 +166,22 @@ fn test_db() {
 
     let r = serde_json::from_slice::<Block>(&ser).unwrap();
     assert_eq!(r.hash(), HashValue::default())
+}
+
+#[test]
+fn shaung() {
+    let mut v = vec![0, 1, 2, 2, 3, 0, 4, 3];
+
+    assert_eq!(remove_element(&mut v, 2), 6);
+
+    pub fn remove_element(nums: &mut Vec<i32>, val: i32) -> i32 {
+        let mut left = 0;
+        for pos in 0..nums.len() {
+            if nums[pos] != val {
+                nums[left] = nums[pos];
+                left += 1;
+            }
+        }
+        left as i32
+    }
 }
