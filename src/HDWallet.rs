@@ -1,6 +1,7 @@
-use std::borrow::Cow;
-
 use bip39::{Language, Mnemonic};
+
+use core::hash;
+use std::borrow::Cow;
 struct WalletDemo {
     user_name: String,
     pwd: String,
