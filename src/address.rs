@@ -41,7 +41,7 @@ fn eip_55(address: &[u8; 20]) -> String {
 fn get_eip55_eth_address_from_private_key(private_key: String) -> String {
     //get public key
     let private_key_whihout_prefix = private_key.trim_start_matches("0x");
-    let public_key = getpubkey_from_private_key(
+    let public_key = get_pubkey_from_private_key(
         hex::decode(private_key_whihout_prefix)
             .expect("decode err")
             .as_slice()
@@ -84,7 +84,7 @@ fn test_gen_eth_address_from_private_key() {
     let private_key =
         "0xf8f8a2f43c8376ccb0871305060d7b27b0554d2cc72bccf41b2705608452f315".to_owned();
     let private_key_whihout_prefix = private_key.trim_start_matches("0x");
-    let public_key = getpubkey_from_private_key(
+    let public_key = get_pubkey_from_private_key(
         hex::decode(private_key_whihout_prefix)
             .expect("decode err")
             .as_slice()
