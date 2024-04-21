@@ -8,6 +8,7 @@ pub mod crypto;
 pub mod db;
 pub mod hash;
 pub mod log;
+pub mod pbkdf2;
 pub mod signature;
 pub mod transaction;
 pub mod wallet;

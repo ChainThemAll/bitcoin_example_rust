@@ -1,24 +1,13 @@
-use bip39::{Language, Mnemonic};
-
-use core::hash;
-use std::borrow::Cow;
-struct WalletDemo {
-    user_name: String,
-    pwd: String,
-    mnemonic: Mnemonic,
-}
-
-fn new_wallet() {}
-
 #[test]
 pub fn mnemonic_to_seed() {
-    use bip39::rand_core;
+    use bip39::{rand_core, Language, Mnemonic};
+    use std::borrow::Cow;
     // gen new mnemonic
 
     //Define mnemonic number, language and password
-    let word_count = 8 * 3;
-    let language = Language::SimplifiedChinese;
-    let pwd = "pwd".to_string();
+    let word_count = 4 * 3;
+    let language = Language::English;
+    let pwd = "TREZOR".to_string();
 
     //gen entropy
     let mut entropy = [0u8; 32];
@@ -28,7 +17,6 @@ pub fn mnemonic_to_seed() {
     //get mnemonic
     let mnemonic =
         Mnemonic::from_entropy_in(language, &entropy[0..(word_count / 3) * 4]).expect("mnemon err");
-
     let v = mnemonic.word_iter().collect::<Vec<_>>();
     println!(" mnemonic is: {:?}", v);
 
@@ -38,7 +26,8 @@ pub fn mnemonic_to_seed() {
         Mnemonic::normalize_utf8_cow(&mut cow);
         cow
     };
-    //gen seed use PBKDF2-HMAC-SHA512
+
+    //gen seed use pbkdf2
     let seed = mnemonic.to_seed_normalized(&normalized_passphrase);
-    println!("seed is: {:?}", seed)
+    println!("seed is: {:?}", seed);
 }
