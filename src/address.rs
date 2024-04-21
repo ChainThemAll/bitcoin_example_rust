@@ -1,5 +1,5 @@
 #[allow(dead_code)]
-fn getpubkey_from_private_key(private_key: &[u8; 32]) -> String {
+fn get_pubkey_from_private_key(private_key: &[u8; 32]) -> String {
     use k256::{elliptic_curve::sec1::ToEncodedPoint, SecretKey};
     let secret_key = SecretKey::from_slice(private_key).expect("secret key err");
     let public_key = secret_key.public_key().to_encoded_point(false);
